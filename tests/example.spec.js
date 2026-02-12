@@ -54,8 +54,8 @@ test('Consultando as reservas cadastradas com base em um id validando apenas os 
 test('Cadastrando uma reserva', async ({ request }) => {
   const response = await request.post('/booking', {
     data: {
-      "firstname" : "herbertao",
-      "lastname" : "qazando",
+      "firstname" : "Milena",
+      "lastname" : "Souza",
       "totalprice" : 222,
       "depositpaid" : true,
       "bookingdates" : {
@@ -73,8 +73,8 @@ console.log(await response.json());
 
 // validando dados de retorno
 const responseBody = await response.json()
-  expect(responseBody.booking).toHaveProperty("firstname", "milena");
-  expect(responseBody.booking).toHaveProperty("lastname", "qazando");
+  expect(responseBody.booking).toHaveProperty("firstname", "Milena");
+  expect(responseBody.booking).toHaveProperty("lastname", "Souza");
   expect(responseBody.booking).toHaveProperty("totalprice", 222);
   expect(responseBody.booking).toHaveProperty("depositpaid", true);
 });
