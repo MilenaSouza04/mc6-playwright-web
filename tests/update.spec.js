@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 // defina a URL completa aqui. Se tiver, pode usar apenas '/auth' e '/booking'
 const BASE_URL = 'https://restful-booker.herokuapp.com';
 
-test('should be able to partial update the booking details', async ({ request }) => {
+test('deve ser capaz de atualizar parcialmente os detalhes da reserva', async ({ request }) => {
 
     // 1. Criar o Token (Auth)
     const responseAuth = await request.post(`${BASE_URL}/auth`, {
@@ -19,7 +19,7 @@ test('should be able to partial update the booking details', async ({ request })
     
     const tokenBody = await responseAuth.json();
     const token = tokenBody.token;
-    console.log("New Token is: " + token);
+    console.log("O novo Token eh: " + token);
 
     // 2. CRIAR uma reserva nova (Para ter um ID válido e evitar erro 404)
     const createResponse = await request.post(`${BASE_URL}/booking`, {
