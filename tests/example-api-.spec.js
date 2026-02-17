@@ -7,7 +7,8 @@ test('Consultando as reservas cadastradas', async ({ request }) => {
   // Fazendo uma requisição GET para a API para obter os detalhes da reserva
   const response = await request.get('/booking');
   // Imprimindo os detalhes da reserva no console
-  console.log(await response.json());
+console.log(`Status Code: ${response.status()}`);
+console.log(`Response Body: ${await response.text()}`);
   // Verificando se a resposta da API foi bem-sucedida
   expect(response.ok()).toBeTruthy();
   // Verificando se o status da resposta é 200 (OK)
@@ -54,25 +55,26 @@ test('Consultando as reservas cadastradas com base em um id validando apenas os 
 test('Cadastrando uma reserva', async ({ request }) => {
   const response = await request.post('/booking', {
     data: {
-      "firstname" : "Milena",
-      "lastname" : "Souza",
-      "totalprice" : 222,
-      "depositpaid" : true,
-      "bookingdates" : {
-          "checkin" : "2018-01-01",
-          "checkout" : "2019-01-01"
+      "firstname": "Milena",
+      "lastname": "Souza",
+      "totalprice": 222,
+      "depositpaid": true,
+      "bookingdates": {
+        "checkin": "2018-01-01",
+        "checkout": "2019-01-01"
       },
-      "additionalneeds" : "Breakfast"
+      "additionalneeds": "Breakfast"
     }
-});
-console.log(await response.json());
+  });
+console.log(`Status Code: ${response.status()}`);
+console.log(`Response Body: ${await response.text()}`);
 
- // Verificando se a resposta da API está OK
- expect(response.ok()).toBeTruthy();
- expect(response.status()).toBe(200);
+  // Verificando se a resposta da API está OK
+  expect(response.ok()).toBeTruthy();
+  expect(response.status()).toBe(200);
 
-// validando dados de retorno
-const responseBody = await response.json()
+  // validando dados de retorno
+  const responseBody = await response.json()
   expect(responseBody.booking).toHaveProperty("firstname", "Milena");
   expect(responseBody.booking).toHaveProperty("lastname", "Souza");
   expect(responseBody.booking).toHaveProperty("totalprice", 222);
@@ -85,11 +87,13 @@ test('Gerando um token herbertao @regressivo', async ({ request }) => {
     data: {
       "username": "admin",
       "password": "password123"
-  }
-});
+    }
+  });
 
-  console.log(await response.json());
-  // Verificando se a resposta da API está OK
+console.log(`Status Code: ${response.status()}`);
+console.log(`Response Body: ${await response.text()}`);
+
+// Verificando se a resposta da API está OK
   expect(response.ok()).toBeTruthy();
   expect(response.status()).toBe(200);
 
@@ -106,11 +110,13 @@ test('Atualização parcial', async ({ request }) => {
     data: {
       "username": "admin",
       "password": "password123"
-  }
-});
+    }
+  });
 
-  console.log(await response.json());
-  // Verificando se a resposta da API está OK
+console.log(`Status Code: ${response.status()}`);
+console.log(`Response Body: ${await response.text()}`);
+
+// Verificando se a resposta da API está OK
   expect(response.ok()).toBeTruthy();
   expect(response.status()).toBe(200);
 
@@ -121,26 +127,26 @@ test('Atualização parcial', async ({ request }) => {
   // Atualizando dados da reserva:
   const partialUpdateRequest = await request.patch('/booking/198', {
     headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Cookie': `token=${tokenRecebido}`
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Cookie': `token=${tokenRecebido}`
     },
     data: {
-        "firstname": "Milena",
-        "lastname": "Souza",
-        "totalprice": 111,
-        "depositpaid": false
+      "firstname": "Milena",
+      "lastname": "Souza",
+      "totalprice": 111,
+      "depositpaid": false
     }
-});
-console.log(await partialUpdateRequest.json());
-expect(partialUpdateRequest.ok()).toBeTruthy();
-expect(partialUpdateRequest.status()).toBe(200);
+  });
+  console.log(await partialUpdateRequest.json());
+  expect(partialUpdateRequest.ok()).toBeTruthy();
+  expect(partialUpdateRequest.status()).toBe(200);
 
-const partialUpdatedResponseBody = await partialUpdateRequest.json()
+  const partialUpdatedResponseBody = await partialUpdateRequest.json()
 
-expect(partialUpdatedResponseBody).toHaveProperty("firstname", "Milena");
-expect(partialUpdatedResponseBody).toHaveProperty("lastname", "Souza");
-expect(partialUpdatedResponseBody).toHaveProperty("totalprice", 111);
-expect(partialUpdatedResponseBody).toHaveProperty("depositpaid", false);
+  expect(partialUpdatedResponseBody).toHaveProperty("firstname", "Milena");
+  expect(partialUpdatedResponseBody).toHaveProperty("lastname", "Souza");
+  expect(partialUpdatedResponseBody).toHaveProperty("totalprice", 111);
+  expect(partialUpdatedResponseBody).toHaveProperty("depositpaid", false);
 
 });
