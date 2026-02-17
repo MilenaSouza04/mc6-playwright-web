@@ -1,25 +1,40 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
-var tokenRecebido
+// Definindo a URL base para facilitar manutenção
+const BASE_URL = 'https://restful-booker.herokuapp.com';
 
-test('Consultando as reservas cadastradas', async ({ request }) => {
-  // Fazendo uma requisição GET para a API para obter os detalhes da reserva
-  const response = await request.get('https://restful-booker.herokuapp.com/booking');
-  // Imprimindo os detalhes da reserva no console
-console.log(`Status Code: ${response.status()}`);
-console.log(`Response Body: ${await response.text()}`);
-  // Verificando se a resposta da API foi bem-sucedida
+test('Consultando as reservas cadastradas (Lista)', async ({ request }) => {
+  const response = await request.get(`${BASE_URL}/booking`);
+  
+  // Debug seguro (status)
+  console.log(`Status Code: ${response.status()}`);
+  
   expect(response.ok()).toBeTruthy();
-  // Verificando se o status da resposta é 200 (OK)
   expect(response.status()).toBe(200);
 });
 
-test('Consultando as reservas cadastradas com base em um id', async ({ request }) => {
-  const response = await request.get('https://restful-booker.herokuapp.com/booking/775');
-  //transforma a resposta em json
+test('Consultando uma reserva específica por ID (Fluxo Completo)', async ({ request }) => {
+  // 1. PRIMEIRO: Criamos uma reserva para garantir que o ID existe
+  const createResponse = await request.post(`${BASE_URL}/booking`, {
+    data: {
+      "firstname": "John",
+      "lastname": "Smith",
+      "totalprice": 111,
+      "depositpaid": true,
+      "bookingdates": { "checkin": "2018-01-01", "checkout": "2019-01-01" },
+      "additionalneeds": "Breakfast"
+    }
+  });
+  const createBody = await createResponse.json();
+  const bookingId = createBody.bookingid; // Pegamos o ID gerado dinamicamente
+
+  // 2. AGORA: Testamos o GET usando esse ID que sabemos que existe
+  const response = await request.get(`${BASE_URL}/booking/${bookingId}`);
   const jsonBody = await response.json();
+  
   console.log(jsonBody);
+
   // Verificando se os dados da reserva estão corretos
   expect(jsonBody.firstname).toBe('John');
   expect(jsonBody.lastname).toBe('Smith');
@@ -29,16 +44,28 @@ test('Consultando as reservas cadastradas com base em um id', async ({ request }
   expect(jsonBody.bookingdates.checkout).toBe('2019-01-01');
   expect(jsonBody.additionalneeds).toBe('Breakfast');
 
-  // Verificando se a resposta da API está OK
   expect(response.ok()).toBeTruthy();
   expect(response.status()).toBe(200);
 });
 
-test('Consultando as reservas cadastradas com base em um id validando apenas os campos', async ({ request }) => {
-  const response = await request.get('https://restful-booker.herokuapp.com/booking/2172');
+test('Validando apenas os campos de uma reserva', async ({ request }) => {
+  // 1. Criamos a reserva para ter um ID válido
+  const createResponse = await request.post(`${BASE_URL}/booking`, {
+    data: {
+      "firstname": "Teste", "lastname": "Campos", "totalprice": 100,
+      "depositpaid": true, "bookingdates": { "checkin": "2023-01-01", "checkout": "2023-01-02" },
+      "additionalneeds": "Lunch"
+    }
+  });
+  const bookingId = (await createResponse.json()).bookingid;
+
+  // 2. Fazemos o GET nesse ID
+  const response = await request.get(`${BASE_URL}/booking/${bookingId}`);
   const jsonBody = await response.json();
+  
   console.log(jsonBody);
-  // Verificando se os campos estão presentes na resposta da API
+
+  // Verificando a estrutura do objeto (Schema check simples)
   expect(jsonBody).toHaveProperty('firstname');
   expect(jsonBody).toHaveProperty('lastname');
   expect(jsonBody).toHaveProperty('totalprice');
@@ -46,14 +73,12 @@ test('Consultando as reservas cadastradas com base em um id validando apenas os 
   expect(jsonBody).toHaveProperty('bookingdates');
   expect(jsonBody).toHaveProperty('additionalneeds');
 
-  // Verificando se a resposta da API está OK
   expect(response.ok()).toBeTruthy();
   expect(response.status()).toBe(200);
 });
 
-
 test('Cadastrando uma reserva', async ({ request }) => {
-  const response = await request.post('https://restful-booker.herokuapp.com/booking', {
+  const response = await request.post(`${BASE_URL}/booking`, {
     data: {
       "firstname": "Milena",
       "lastname": "Souza",
@@ -66,15 +91,16 @@ test('Cadastrando uma reserva', async ({ request }) => {
       "additionalneeds": "Breakfast"
     }
   });
-console.log(`Status Code: ${response.status()}`);
-console.log(`Response Body: ${await response.text()}`);
 
-  // Verificando se a resposta da API está OK
+  console.log(`Status Code: ${response.status()}`);
+  
+  // Nota: Removi response.text() aqui para não quebrar o response.json() abaixo
+  const responseBody = await response.json();
+  console.log(responseBody);
+
   expect(response.ok()).toBeTruthy();
   expect(response.status()).toBe(200);
 
-  // validando dados de retorno
-  const responseBody = await response.json()
   expect(responseBody.booking).toHaveProperty("firstname", "Milena");
   expect(responseBody.booking).toHaveProperty("lastname", "Souza");
   expect(responseBody.booking).toHaveProperty("totalprice", 222);
@@ -82,54 +108,48 @@ console.log(`Response Body: ${await response.text()}`);
 });
 
 test('Gerando um token herbertao @regressivo', async ({ request }) => {
-
-  const response = await request.post('https://restful-booker.herokuapp.com/auth', {
+  const response = await request.post(`${BASE_URL}/auth`, {
     data: {
       "username": "admin",
       "password": "password123"
     }
   });
 
-console.log(`Status Code: ${response.status()}`);
-console.log(`Response Body: ${await response.text()}`);
+  console.log(`Status Code: ${response.status()}`);
 
-// Verificando se a resposta da API está OK
   expect(response.ok()).toBeTruthy();
   expect(response.status()).toBe(200);
 
   const responseBody = await response.json();
-  tokenRecebido = responseBody.token;
-  console.log("Seu token é:" + tokenRecebido);
-
+  const tokenRecebido = responseBody.token;
+  console.log("Seu token é: " + tokenRecebido);
 });
 
-test('Atualização parcial', async ({ request }) => {
+test('Atualização parcial (PATCH)', async ({ request }) => {
+  // PASSO 1: Gerar Token
+  const authResponse = await request.post(`${BASE_URL}/auth`, {
+    data: { "username": "admin", "password": "password123" }
+  });
+  const token = (await authResponse.json()).token;
+  console.log("Token gerado: " + token);
 
-  // criando o token
-  const response = await request.post('https://restful-booker.herokuapp.com/auth', {
+  // PASSO 2: Criar uma reserva para ser atualizada (Evita erro 404/405)
+  const createResponse = await request.post(`${BASE_URL}/booking`, {
     data: {
-      "username": "admin",
-      "password": "password123"
+      "firstname": "Original", "lastname": "Name", "totalprice": 100,
+      "depositpaid": true, "bookingdates": { "checkin": "2023-01-01", "checkout": "2023-01-05" },
+      "additionalneeds": "Dinner"
     }
   });
+  const bookingId = (await createResponse.json()).bookingid;
+  console.log("Reserva criada para update com ID: " + bookingId);
 
-console.log(`Status Code: ${response.status()}`);
-console.log(`Response Body: ${await response.text()}`);
-
-// Verificando se a resposta da API está OK
-  expect(response.ok()).toBeTruthy();
-  expect(response.status()).toBe(200);
-
-  const responseBody = await response.json();
-  tokenRecebido = responseBody.token;
-  console.log("Seu token é:" + tokenRecebido);
-
-  // Atualizando dados da reserva:
-  const partialUpdateRequest = await request.patch('https://restful-booker.herokuapp.com/booking/198', {
+  // PASSO 3: Atualizar a reserva criada
+  const partialUpdateRequest = await request.patch(`${BASE_URL}/booking/${bookingId}`, {
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Cookie': `token=${tokenRecebido}`
+      'Cookie': `token=${token}`
     },
     data: {
       "firstname": "Milena",
@@ -138,15 +158,16 @@ console.log(`Response Body: ${await response.text()}`);
       "depositpaid": false
     }
   });
-  console.log(await partialUpdateRequest.json());
+
+  // Validações
   expect(partialUpdateRequest.ok()).toBeTruthy();
   expect(partialUpdateRequest.status()).toBe(200);
 
-  const partialUpdatedResponseBody = await partialUpdateRequest.json()
+  const partialUpdatedResponseBody = await partialUpdateRequest.json();
+  console.log(partialUpdatedResponseBody);
 
   expect(partialUpdatedResponseBody).toHaveProperty("firstname", "Milena");
   expect(partialUpdatedResponseBody).toHaveProperty("lastname", "Souza");
   expect(partialUpdatedResponseBody).toHaveProperty("totalprice", 111);
   expect(partialUpdatedResponseBody).toHaveProperty("depositpaid", false);
-
 });
