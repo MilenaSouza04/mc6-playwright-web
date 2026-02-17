@@ -1,28 +1,47 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
-var token
+// Se você não tiver baseURL configurado no playwright.config, 
+// defina a URL completa aqui. Se tiver, pode usar apenas '/auth' e '/booking'
+const BASE_URL = 'https://restful-booker.herokuapp.com';
 
 test('should be able to partial update the booking details', async ({ request }) => {
 
-    // Create a Token which will be used in PATCH request
-
-    const response = await request.post(`/auth`, {
+    // 1. Criar o Token (Auth)
+    const responseAuth = await request.post(`${BASE_URL}/auth`, {
         data: {
             "username": "admin",
             "password": "password123"
         }
     });
-    console.log(await response.json());
-    expect(response.ok()).toBeTruthy();
-    expect(response.status()).toBe(200);
-    const responseBody = await response.json();
-    token = responseBody.token;
+    expect(responseAuth.ok()).toBeTruthy();
+    expect(responseAuth.status()).toBe(200);
+    
+    const tokenBody = await responseAuth.json();
+    const token = tokenBody.token;
     console.log("New Token is: " + token);
 
-    // PATCH
+    // 2. CRIAR uma reserva nova (Para ter um ID válido e evitar erro 404)
+    const createResponse = await request.post(`${BASE_URL}/booking`, {
+        data: {
+            "firstname": "Jim",
+            "lastname": "Brown",
+            "totalprice": 111,
+            "depositpaid": true,
+            "bookingdates": {
+                "checkin": "2018-01-01",
+                "checkout": "2019-01-01"
+            },
+            "additionalneeds": "Breakfast"
+        }
+    });
+    expect(createResponse.ok()).toBeTruthy();
+    const createBody = await createResponse.json();
+    const bookingId = createBody.bookingid;
+    console.log("Reserva criada com ID: " + bookingId);
 
-    const partialUpdateRequest = await request.patch(`/booking/1`, {
+    // 3. Atualizar (PATCH) usando o ID que acabamos de criar
+    const partialUpdateRequest = await request.patch(`${BASE_URL}/booking/${bookingId}`, {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -35,10 +54,15 @@ test('should be able to partial update the booking details', async ({ request })
             "depositpaid": false
         }
     });
-    console.log(await partialUpdateRequest.json());
+
+    // Verificações
+    console.log(`Status Update: ${partialUpdateRequest.status()}`);
     expect(partialUpdateRequest.ok()).toBeTruthy();
     expect(partialUpdateRequest.status()).toBe(200);
-    const partialUpdatedResponseBody = await partialUpdateRequest.json()
+
+    const partialUpdatedResponseBody = await partialUpdateRequest.json();
+    console.log(partialUpdatedResponseBody);
+
     expect(partialUpdatedResponseBody).toHaveProperty("firstname", "Sim");
     expect(partialUpdatedResponseBody).toHaveProperty("lastname", "Son");
     expect(partialUpdatedResponseBody).toHaveProperty("totalprice", 333);
