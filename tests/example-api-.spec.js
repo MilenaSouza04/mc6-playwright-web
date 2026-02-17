@@ -5,7 +5,7 @@ var tokenRecebido
 
 test('Consultando as reservas cadastradas', async ({ request }) => {
   // Fazendo uma requisição GET para a API para obter os detalhes da reserva
-  const response = await request.get('/booking');
+  const response = await request.get('https://restful-booker.herokuapp.com/booking');
   // Imprimindo os detalhes da reserva no console
 console.log(`Status Code: ${response.status()}`);
 console.log(`Response Body: ${await response.text()}`);
@@ -16,7 +16,7 @@ console.log(`Response Body: ${await response.text()}`);
 });
 
 test('Consultando as reservas cadastradas com base em um id', async ({ request }) => {
-  const response = await request.get('/booking/775');
+  const response = await request.get('https://restful-booker.herokuapp.com/booking/775');
   //transforma a resposta em json
   const jsonBody = await response.json();
   console.log(jsonBody);
@@ -35,7 +35,7 @@ test('Consultando as reservas cadastradas com base em um id', async ({ request }
 });
 
 test('Consultando as reservas cadastradas com base em um id validando apenas os campos', async ({ request }) => {
-  const response = await request.get('/booking/2172');
+  const response = await request.get('https://restful-booker.herokuapp.com/booking/2172');
   const jsonBody = await response.json();
   console.log(jsonBody);
   // Verificando se os campos estão presentes na resposta da API
@@ -53,7 +53,7 @@ test('Consultando as reservas cadastradas com base em um id validando apenas os 
 
 
 test('Cadastrando uma reserva', async ({ request }) => {
-  const response = await request.post('/booking', {
+  const response = await request.post('https://restful-booker.herokuapp.com/booking', {
     data: {
       "firstname": "Milena",
       "lastname": "Souza",
@@ -83,7 +83,7 @@ console.log(`Response Body: ${await response.text()}`);
 
 test('Gerando um token herbertao @regressivo', async ({ request }) => {
 
-  const response = await request.post('/auth', {
+  const response = await request.post('https://restful-booker.herokuapp.com/auth', {
     data: {
       "username": "admin",
       "password": "password123"
@@ -106,7 +106,7 @@ console.log(`Response Body: ${await response.text()}`);
 test('Atualização parcial', async ({ request }) => {
 
   // criando o token
-  const response = await request.post('/auth', {
+  const response = await request.post('https://restful-booker.herokuapp.com/auth', {
     data: {
       "username": "admin",
       "password": "password123"
@@ -125,7 +125,7 @@ console.log(`Response Body: ${await response.text()}`);
   console.log("Seu token é:" + tokenRecebido);
 
   // Atualizando dados da reserva:
-  const partialUpdateRequest = await request.patch('/booking/198', {
+  const partialUpdateRequest = await request.patch('https://restful-booker.herokuapp.com/booking/198', {
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
